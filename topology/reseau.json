@@ -1,0 +1,59 @@
+{
+  "controleur": {
+    "ip": "127.0.0.1",
+    "port": 6653
+  },
+
+  "switches": {
+    "coeur": { "dpid": "0000000000000001", "role": "l3", "priorite_stp": 4096,  "description": "S-Coeur : switch L3, passerelle des VLAN, firewall de bordure" },
+    "dist1": { "dpid": "0000000000000002", "role": "l2", "priorite_stp": 8192,  "description": "S-DIST1 : distribution, vers l'acces" },
+    "dist2": { "dpid": "0000000000000003", "role": "l2", "priorite_stp": 12288, "description": "S-DIST2 : distribution, vers les serveurs" },
+    "acc":   { "dpid": "0000000000000004", "role": "l2", "priorite_stp": 32768, "description": "S-ACC : acces des VLAN 20, 30 et 40" }
+  },
+
+  "vlans": {
+    "20": { "nom": "Voix",     "reseau": "10.1.20.0/24", "passerelle": "10.1.20.254" },
+    "30": { "nom": "Invites",  "reseau": "10.1.30.0/24", "passerelle": "10.1.30.254" },
+    "40": { "nom": "Employes", "reseau": "10.1.40.0/24", "passerelle": "10.1.40.254" },
+    "50": { "nom": "Serveurs", "reseau": "10.1.50.0/24", "passerelle": "10.1.50.254" },
+    "99": { "nom": "Externe",  "reseau": "10.1.99.0/24", "passerelle": "10.1.99.254" }
+  },
+
+  "nat": {
+    "active": true,
+    "switch": "coeur",
+    "port": 4,
+    "reseau_transit": "10.1.0.0/24",
+    "ip_coeur": "10.1.0.1",
+    "ip_nat": "10.1.0.254/24",
+    "reseau_global": "10.1.0.0/16"
+  },
+
+  "liens": [
+    { "a": "coeur", "port_a": 1, "b": "dist1", "port_b": 1, "debit": 100 },
+    { "a": "coeur", "port_a": 2, "b": "dist2", "port_b": 1, "debit": 100 },
+    { "a": "dist1", "port_a": 2, "b": "dist2", "port_b": 2, "debit": 20, "agregation": "po1" },
+    { "a": "dist1", "port_a": 3, "b": "dist2", "port_b": 3, "debit": 20, "agregation": "po1" },
+    { "a": "dist1", "port_a": 4, "b": "acc",   "port_b": 1, "debit": 100 }
+  ],
+
+  "agregations": {
+    "po1": {
+      "description": "EtherChannel entre S-DIST1 et S-DIST2",
+      "membres": { "dist1": [2, 3], "dist2": [2, 3] }
+    }
+  },
+
+  "hotes": {
+    "tel1": { "vlan": 20, "ip": "10.1.20.1", "switch": "acc",   "port": 2, "role": "Telephone IP" },
+    "tel2": { "vlan": 20, "ip": "10.1.20.2", "switch": "acc",   "port": 3, "role": "Telephone IP" },
+    "inv1": { "vlan": 30, "ip": "10.1.30.1", "switch": "acc",   "port": 4, "role": "Invite" },
+    "inv2": { "vlan": 30, "ip": "10.1.30.2", "switch": "acc",   "port": 5, "role": "Invite malveillant (attaque interne)" },
+    "emp1": { "vlan": 40, "ip": "10.1.40.1", "switch": "acc",   "port": 6, "role": "Employe" },
+    "emp2": { "vlan": 40, "ip": "10.1.40.2", "switch": "acc",   "port": 7, "role": "Employe" },
+    "srv1": { "vlan": 50, "ip": "10.1.50.1", "switch": "dist2", "port": 4, "role": "Serveur web (HTTP)", "service": "web" },
+    "srv2": { "vlan": 50, "ip": "10.1.50.2", "switch": "dist2", "port": 5, "role": "Serveur DNS", "service": "dns" },
+    "att1": { "vlan": 99, "ip": "10.1.99.1", "switch": "coeur", "port": 3, "role": "Attaquant externe (Internet simule)" },
+    "test1": { "vlan": 20, "ip": "10.1.20.99", "switch": "dist2", "port": 6, "role": "Hote de test" }
+  }
+}

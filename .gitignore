@@ -1,0 +1,15 @@
+# Environnement virtuel Python (uv)
+.env/
+.venv/
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Logs et captures
+*.log
+*.pcap
+
+# Modèles ML et données volumineuses (partie de l'associé)
+*.pkl
+data/
+ryu/
